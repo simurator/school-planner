@@ -1,7 +1,11 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\components",
+    "\\src\\app\\components\\calendar"
   ],
-  "SelectedNode": "\\C:\\Users\\szymo\\source\\repos\\school-planner",
+  "SelectedNode": "\\src\\app\\components\\calendar\\calendar.component.html",
   "PreviewInSolutionExplorer": false
 }
