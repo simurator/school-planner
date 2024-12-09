@@ -65,6 +65,23 @@ export class CalendarComponent implements OnInit {
   ) { }
 
   
+  getTimeSlotsForAppointment(startTime: string, endTime: string): string[] {
+    const startIndex = this.timeSlots.indexOf(startTime);
+    const endIndex = this.timeSlots.indexOf(endTime);
+    if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+      return []; // Niepoprawny czas, zwróć pustą listę
+    }
+    return this.timeSlots.slice(startIndex, endIndex + 1);
+  }
+  isAppointmentInTimeSlot(day: Date, timeSlot: string): boolean {
+    return this.appointments.some((appointment) => {
+      if (appointment.date.toDateString() !== day.toDateString()) {
+        return false; // Spotkanie nie należy do tego dnia
+      }
+      const occupiedSlots = this.getTimeSlotsForAppointment(appointment.startTime, appointment.endTime);
+      return occupiedSlots.includes(timeSlot);
+    });
+  }
 
   onDialogSave(data: any): void {
     // Sprawdź, czy spotkanie już istnieje (edycja istniejącego spotkania)
@@ -363,14 +380,14 @@ export class CalendarComponent implements OnInit {
   }
 
   getFilteredAppointmentsForDateTime(day: Date, timeSlot: string): Appointment[] {
-    return this.filteredAppointments.filter(appointment => {
-      // Ensure the appointment matches both the day and time slot
-      const isSameDate = this.isSameDay(appointment.date, day);
-      const isInTimeSlot = appointment.startTime === timeSlot;
-
-      return isSameDate && isInTimeSlot;
+    return this.appointments.filter(appointment => {
+      const isSameDay = appointment.date.toDateString() === day.toDateString();
+      const isInTimeSlot = this.getTimeSlotsForAppointment(appointment.startTime, appointment.endTime)
+        .includes(timeSlot);
+      return isSameDay && isInTimeSlot;
     });
   }
+
 
   editAppointment(appointment: Appointment, event: Event): void {
     event.stopPropagation();
