@@ -14,9 +14,21 @@ export const timeRangeValidator: ValidatorFn = (control: AbstractControl): Valid
     const endDate = new Date();
     endDate.setHours(endHours, endMinutes, 0, 0);
 
+    const openingTime = new Date();
+    openingTime.setHours(8, 0, 0, 0);
+
+    const closingTime = new Date();
+    closingTime.setHours(17, 30, 0, 0);
+
     if (startDate >= endDate) {
       return { timeRangeInvalid: true };
     }
+
+    if (startDate < openingTime || endDate < openingTime || startDate > closingTime || endDate > closingTime) {
+      return { timeOutOfBounds: true };
+    }
   }
+
   return null;
 };
+

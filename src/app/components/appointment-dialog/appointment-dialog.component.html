@@ -32,12 +32,14 @@
         <input matInput formControlName="endTime" type="time" />
       </mat-form-field>
 
-
-      <div
-        *ngIf="appointmentForm.errors && appointmentForm.errors['timeRangeInvalid']"
-        class="error"
-      >
+      <div *ngIf="appointmentForm.errors && appointmentForm.errors['timeRangeInvalid']"
+           class="error">
         End time must be after start time.
+      </div>
+
+      <div *ngIf="appointmentForm.errors && appointmentForm.errors['timeOutOfBounds']"
+           class="error">
+        Time must be between 8:00 and 17:30.
       </div>
     </div>
 
@@ -46,19 +48,15 @@
         <span *ngIf="data.uuid">Edit Appointment</span>
         <span *ngIf="!data.uuid">Add Appointment</span>
       </button>
-      <button
-        (click)="onDeleteClick()"
-        *ngIf="data.uuid"
-        style="margin-left: 10px"
-        mat-stroked-button
-      >
+      <button (click)="onDeleteClick()"
+              *ngIf="data.uuid"
+              style="margin-left: 10px"
+              mat-stroked-button>
         Delete
       </button>
-      <button
-        style="margin-left: 10px"
-        mat-stroked-button
-        (click)="onNoClick()"
-      >
+      <button style="margin-left: 10px"
+              mat-stroked-button
+              (click)="onNoClick()">
         Cancel
       </button>
     </div>
