@@ -36,14 +36,7 @@ export class CalendarComponent implements OnInit {
   weekDays: string[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
   monthDays: Date[] = [];
   appointments: Appointment[] = [
-    {
-      uuid: '00000000-0000-0000-0000-000000000002',
-      date: new Date(new Date().getFullYear(), new Date().getMonth(), 2),
-      title: 'Lunch with Alice',
-      teacher: 'Nobody',
-      startTime: '12:00',
-      endTime: '13:00',
-    }
+    
   ];
   currentView: CalendarView = CalendarView.Week;
   timeSlots: string[] = [];
@@ -384,9 +377,14 @@ export class CalendarComponent implements OnInit {
       const isSameDay = appointment.date.toDateString() === day.toDateString();
       const isInTimeSlot = this.getTimeSlotsForAppointment(appointment.startTime, appointment.endTime)
         .includes(timeSlot);
-      return isSameDay && isInTimeSlot;
+
+      // Dodanie warunku filtracji po nauczycielu
+      const matchesTeacher = !this.selectedTeacher || appointment.teacher === this.selectedTeacher;
+
+      return isSameDay && isInTimeSlot && matchesTeacher;
     });
   }
+
 
 
   editAppointment(appointment: Appointment, event: Event): void {
