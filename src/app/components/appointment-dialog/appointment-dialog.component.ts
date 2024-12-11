@@ -1,4 +1,3 @@
-// appointment-dialog.component.ts
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -8,10 +7,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { ReactiveFormsModule } from '@angular/forms';
-import {  Input, Output, EventEmitter } from '@angular/core';
-
-import { DateService} from "../../services/date.service";
-import { timeRangeValidator} from "../../validators/time-range.validator";
+import { Input, Output, EventEmitter } from '@angular/core';
+import { FormControl, FormArray } from '@angular/forms';
+import { DateService } from "../../services/date.service";
+import { timeRangeValidator } from "../../validators/time-range.validator";
 
 @Component({
   selector: 'app-appointment-dialog',
@@ -58,7 +57,15 @@ export class AppointmentDialogComponent {
     private formBuilder: FormBuilder,
     private dateService: DateService // Inject DateService
   ) {
-    // Initialize the form and determine the initial weekday selection
+    this.appointmentForm = new FormGroup({
+      title: new FormControl('', Validators.required),
+      teacher: new FormControl('', Validators.required),
+      date: new FormControl('', Validators.required),
+      startTime: new FormControl('', [Validators.required, this.timeValidator]),
+      endTime: new FormControl('', [Validators.required, this.timeValidator]),
+      timeRangeInvalid: new FormControl(false), // This could be used for custom validation
+      timeOutOfBounds: new FormControl(false) // Custom validation for time range
+    });
     this.selectedWeekday = this.dateService.getWeekdayFromDate(this.data.date || new Date());
 
     this.appointmentForm = this.formBuilder.group(
@@ -71,6 +78,18 @@ export class AppointmentDialogComponent {
       },
       { validators: timeRangeValidator }
     );
+  }
+
+  timeValidator(control: FormControl): { [key: string]: boolean } | null {
+    if (control.value) {
+      const time = control.value;
+      const hours = parseInt(time.split(':')[0], 10);
+      const minutes = parseInt(time.split(':')[1], 10);
+      if (hours < 8 || (hours === 17 && minutes > 30) || hours > 17) {
+        return { 'timeOutOfBounds': true };
+      }
+    }
+    return null;
   }
 
   onNoClick(): void {
@@ -95,16 +114,14 @@ export class AppointmentDialogComponent {
     this.dialogRef.close({ remove: true, uuid: this.data.uuid });
   }
 
-  // Convert selected weekday to a Date object based on the original date
   getSelectedDate(): Date {
     return this.dateService.getSelectedDate(new Date(this.data.date), this.selectedWeekday);
   }
 
-  // Access the weekdays from DateService
   get weekdays() {
     return this.dateService.weekdays;
-
   }
+
   onCancelClick(): void {
     this.cancel.emit();
   }

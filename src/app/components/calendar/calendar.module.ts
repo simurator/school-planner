@@ -13,6 +13,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { AppointmentDialogComponent } from '../appointment-dialog/appointment-dialog.component';
 import {MatOption} from "@angular/material/core";
 import { MatSelect } from "@angular/material/select";
+import { ReactiveFormsModule } from '@angular/forms';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 
 const routes: Routes = [{ path: '', component: CalendarComponent }];
@@ -20,6 +22,7 @@ const routes: Routes = [{ path: '', component: CalendarComponent }];
 @NgModule({
   declarations: [CalendarComponent],
   imports: [
+    ReactiveFormsModule,
     FormsModule,
         CommonModule,
         MatButtonModule,
@@ -32,6 +35,7 @@ const routes: Routes = [{ path: '', component: CalendarComponent }];
         MatOption,
     MatSelect,
     
-    ],
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class CalendarModule {}

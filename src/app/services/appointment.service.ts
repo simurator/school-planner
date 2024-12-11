@@ -12,14 +12,16 @@ export class AppointmentService {
         private colorService: ColorService
     ) {}
 
-    addAppointment(
+  addAppointment(
+        
         appointments: Appointment[],
         date: Date,
         title: string,
         teacher: string,
         startTime: string,
         endTime: string
-    ): Appointment[] {
+  ): Appointment[] {
+    
         const newAppointment: Appointment = {
             uuid: this.uuidService.generateUUID(),
             date,

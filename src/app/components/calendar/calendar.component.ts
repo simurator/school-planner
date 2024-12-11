@@ -13,6 +13,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { ColorService } from '../../services/color.service';
 import { cloneDeep } from 'lodash';
 import { CdkDragEnd } from '@angular/cdk/drag-drop';
+import { FormGroup, FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
+
 
 
 
@@ -54,18 +56,21 @@ export class CalendarComponent implements OnInit {
   selectedAppointment: Appointment | null = null;
   showWelcomeScreen = true;
   calendarView = CalendarView;
+  teacherFilterControl: FormControl = new FormControl();
 
 
   // New properties for teacher sorting
   teacherSortOrder: TeacherSortOrder = TeacherSortOrder.None;
   teacherHoursMap: Map<string, number> = new Map();
 
-  constructor(
+  constructor(private fb: FormBuilder,
     public dialog: MatDialog,
     private appointmentService: AppointmentService, private colorService: ColorService
   ) { }
 
   
+  
+
 
   
 
@@ -169,13 +174,19 @@ export class CalendarComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.teacherFilterControl.setValue(null);
     this.initializeWelcomeScreen();
     this.setRandomAppointmentColor();
     this.generateView(this.currentView, this.viewDate);
     this.generateTimeSlots();
     this.filteredAppointments = [...this.appointments];
     this.updateTeachersList();
+    this.teacherFilterControl.valueChanges.subscribe(value => {
+      this.filterByTeacher(value);
+    });
   }
+
+
 
   initializeWelcomeScreen(): void {
     setTimeout(() => {
