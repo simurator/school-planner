@@ -65,17 +65,27 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: lavender;
   margin-left: 3px;
   margin-right: 3px;
   border-radius: 5px;
   cursor: pointer;
-
-  span {
-    text-align: left;
-    line-height: 15px;
-  }
+  background-color: aqua;
 }
+
+
+
+
+
+
+
+
+ 
+ /* This will apply the color from each appointment */
+
+
+
+
+
 
 .calendar-view-week {
   margin-top: 1rem;

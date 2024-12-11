@@ -10,9 +10,14 @@ import {
 } from '@angular/material/button-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { ColorService } from '../../services/color.service';
+import { cloneDeep } from 'lodash';
+import { CdkDragEnd } from '@angular/cdk/drag-drop';
+
 
 
 export enum CalendarView {
+  Welcome = 'welcome',
   Month = 'month',
   Week = 'week',
   Day = 'day',
@@ -38,7 +43,8 @@ export class CalendarComponent implements OnInit {
   appointments: Appointment[] = [
     
   ];
-  currentView: CalendarView = CalendarView.Week;
+  currentView: CalendarView = CalendarView.Welcome;
+
   timeSlots: string[] = [];
   filteredAppointments: Appointment[] = [...this.appointments];
   selectedTeacher: string | null = null;
@@ -46,6 +52,8 @@ export class CalendarComponent implements OnInit {
   showTeachersDropdown = false;
   showDialog = false;
   selectedAppointment: Appointment | null = null;
+  showWelcomeScreen = true;
+  calendarView = CalendarView;
 
 
   // New properties for teacher sorting
@@ -54,10 +62,13 @@ export class CalendarComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
-    private appointmentService: AppointmentService
+    private appointmentService: AppointmentService, private colorService: ColorService
   ) { }
 
   
+
+  
+
   getTimeSlotsForAppointment(startTime: string, endTime: string): string[] {
     const startIndex = this.timeSlots.indexOf(startTime);
     const endIndex = this.timeSlots.indexOf(endTime);
@@ -77,22 +88,21 @@ export class CalendarComponent implements OnInit {
   }
 
   onDialogSave(data: any): void {
-    // Sprawdź, czy spotkanie już istnieje (edycja istniejącego spotkania)
     if (this.selectedAppointment?.uuid) {
-      // Edytuj istniejące spotkanie
+      // Edycja istniejącego spotkania
       const index = this.appointments.findIndex(
         (a) => a.uuid === this.selectedAppointment?.uuid
       );
       if (index !== -1) {
-        const updatedAppointment = { ...data, uuid: this.selectedAppointment.uuid };
+        const updatedAppointment = { ...cloneDeep(data), uuid: this.selectedAppointment.uuid };
 
-        // Sprawdź konflikt z innymi spotkaniami przed zapisaniem
+        // Sprawdzenie konfliktów
         const hasConflict = this.hasConflictingAppointment(
           updatedAppointment.teacher,
           updatedAppointment.date,
           updatedAppointment.startTime,
           updatedAppointment.endTime,
-          updatedAppointment.uuid // Ignoruj aktualnie edytowane spotkanie
+          updatedAppointment.uuid
         );
 
         if (hasConflict) {
@@ -100,20 +110,29 @@ export class CalendarComponent implements OnInit {
           return;
         }
 
-        // Brak konfliktu - zapisujemy spotkanie
-        this.appointments[index] = updatedAppointment;
+        // Aktualizacja spotkania
+        this.appointments = this.appointmentService.editAppointment(
+          this.appointments,
+          updatedAppointment
+        );
         this.filteredAppointments = [...this.appointments];
       }
     } else {
-      // Dodaj nowe spotkanie
-      const newAppointment = { ...data, uuid: crypto.randomUUID() };
+      // Dodawanie nowego spotkania
+      const newAppointmentData = {
+        date: data.date,
+        title: data.title,
+        teacher: data.teacher,
+        startTime: data.startTime,
+        endTime: data.endTime,
+      };
 
-      // Sprawdź konflikt z innymi spotkaniami przed zapisaniem
+      // Sprawdzenie konfliktów
       const hasConflict = this.hasConflictingAppointment(
-        newAppointment.teacher,
-        newAppointment.date,
-        newAppointment.startTime,
-        newAppointment.endTime
+        newAppointmentData.teacher,
+        newAppointmentData.date,
+        newAppointmentData.startTime,
+        newAppointmentData.endTime
       );
 
       if (hasConflict) {
@@ -121,13 +140,24 @@ export class CalendarComponent implements OnInit {
         return;
       }
 
-      // Brak konfliktu - dodaj nowe spotkanie
-      this.appointments.push(newAppointment);
+      // Dodanie nowego spotkania
+      this.appointments = this.appointmentService.addAppointment(
+        this.appointments,
+        newAppointmentData.date,
+        newAppointmentData.title,
+        newAppointmentData.teacher,
+        newAppointmentData.startTime,
+        newAppointmentData.endTime
+      );
       this.filteredAppointments = [...this.appointments];
     }
 
     this.closeDialog();
   }
+
+
+
+
 
   onDialogCancel(): void {
     this.closeDialog();
@@ -139,10 +169,24 @@ export class CalendarComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.initializeWelcomeScreen();
+    this.setRandomAppointmentColor();
     this.generateView(this.currentView, this.viewDate);
     this.generateTimeSlots();
     this.filteredAppointments = [...this.appointments];
     this.updateTeachersList();
+  }
+
+  initializeWelcomeScreen(): void {
+    setTimeout(() => {
+      this.showWelcomeScreen = false; // Ukryj ekran powitalny po 3 sekundach
+    }, 3000);
+  }
+
+
+  setRandomAppointmentColor(): void {
+    const randomColor = this.colorService.getRandomColor();
+    document.documentElement.style.setProperty('--appointment-color', randomColor);
   }
 
   // New method to generate view based on current view and date
@@ -189,6 +233,9 @@ export class CalendarComponent implements OnInit {
   // Switch to a specific view
   switchToView(view: string): void {
     switch (view) {
+      case 'welcome':
+        this.currentView = CalendarView.Welcome;
+        break;
       case 'week':
         this.currentView = CalendarView.Week;
         break;
@@ -200,6 +247,7 @@ export class CalendarComponent implements OnInit {
     }
     this.generateView(this.currentView, this.viewDate);
   }
+
 
   // Open appointment dialog
   openDialog(): void {
@@ -245,6 +293,7 @@ export class CalendarComponent implements OnInit {
   // Rest of the methods from the previous implementation remain the same...
 
   updateTeachersList(): void {
+    this.setRandomAppointmentColor();
     // Calculate total hours for each teacher
     this.teacherHoursMap = this.calculateTeacherHours();
 
@@ -476,6 +525,9 @@ export class CalendarComponent implements OnInit {
       return isSameDay && ((newStart < existingEnd && newEnd > existingStart));
     });
   }
+
+
+
 
 
 

@@ -1,9 +1,15 @@
 <div class="container" cdkDropListGroup>
-  <div class="calendar-container">
+  <!-- Welcome Screen -->
+  <div *ngIf="currentView === 'welcome'" class="welcome-screen">
+    <h1>Welcome to the Calendar App!</h1>
+    <button mat-raised-button (click)="switchToView('week')">Go to Calendar</button>
+  </div>
+
+  <!-- Calendar View (Week) -->
+  <div *ngIf="currentView === 'week'" class="calendar-container">
     <div class="calendar-header">
       <div>
-
-        <!-- View Switch Toggle -->
+        <!-- View Switch Toggle (Week) -->
         <mat-button-toggle-group class="calendar-view-toggle"
                                  name="currentView"
                                  [(ngModel)]="currentView"
@@ -14,6 +20,7 @@
         </mat-button-toggle-group>
       </div>
 
+      <!-- Calendar Controls -->
       <div class="calendar-controls">
         <button mat-flat-button
                 color="primary"
@@ -53,21 +60,16 @@
       </div>
     </div>
 
-    <!-- Week View -->
-    <table width="100%"
-           cellspacing="0"
-           cellpadding="0"
-           class="calendar-view-week"
-           *ngIf="currentView === 'week'">
+    <!-- Week View Table -->
+    <table width="100%" cellspacing="0" cellpadding="0" class="calendar-view-week">
       <thead>
         <tr>
           <th class="time-column"></th>
           <th *ngFor="let day of monthDays">
-            {{ day | date:'EEEE' }} <!-- Tylko nazwy dni tygodnia -->
+            {{ day | date:'EEEE' }}
           </th>
         </tr>
       </thead>
-
       <tbody cdkDropListGroup>
         <tr *ngFor="let timeSlot of timeSlots">
           <td class="calendar-slot-cell">
@@ -88,6 +90,7 @@
                  cdkDragHandle
                  [cdkDragData]="appointment"
                  class="appointment"
+                 [ngStyle]="{ 'background-color': appointment.color }"
                  [ngClass]="{'selected-teacher': selectedTeacher && appointment.teacher === selectedTeacher}"
                  (click)="editAppointment(appointment, $event)">
               <div class="appointment-content">
@@ -102,13 +105,65 @@
         </tr>
       </tbody>
     </table>
+  </div>
 
-    <!-- Day View -->
-    <table width="100%"
-           cellspacing="0"
-           cellpadding="0"
-           class="calendar-view-day"
-           *ngIf="currentView === 'day'">
+  <!-- Calendar View (Day) -->
+  <div *ngIf="currentView === 'day'" class="calendar-container">
+    <div class="calendar-header">
+      <div>
+        <!-- View Switch Toggle (Day) -->
+        <mat-button-toggle-group class="calendar-view-toggle"
+                                 name="currentView"
+                                 [(ngModel)]="currentView"
+                                 (change)="switchToView($event.value)"
+                                 aria-label="Calendar-View">
+          <mat-button-toggle value="week">Week</mat-button-toggle>
+          <mat-button-toggle value="day">Day</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      <!-- Calendar Controls -->
+      <div class="calendar-controls">
+        <button mat-flat-button
+                color="primary"
+                (click)="selectDate()"
+                (keydown.enter)="selectDate()"
+                (keydown.space)="selectDate()">
+          Add Appointment
+        </button>
+
+        <button mat-button
+                (click)="showTeachersDropdown = !showTeachersDropdown"
+                *ngIf="!selectedTeacher">
+          Filter by Teacher
+        </button>
+
+        <mat-select *ngIf="showTeachersDropdown"
+                    placeholder="Select Teacher"
+                    (selectionChange)="filterByTeacher($event.value)">
+          <mat-option *ngFor="let teacher of uniqueTeachers"
+                      [value]="teacher">
+            {{ teacher }} ({{ getTeacherTotalHours(teacher) }} hrs)
+          </mat-option>
+        </mat-select>
+
+        <button mat-icon-button
+                (click)="toggleTeacherSort()"
+                *ngIf="showTeachersDropdown"
+                aria-label="Toggle Teacher Sort">
+          {{ getTeacherSortLabel() }}
+        </button>
+
+        <button *ngIf="selectedTeacher"
+                mat-button
+                (click)="clearTeacherFilter()">
+          Clear Filter
+        </button>
+      </div>
+    </div>
+
+    <!-- Day View Table -->
+    <table width="100%" cellspacing="0" cellpadding="0" class="calendar-view-day">
       <thead>
         <tr>
           <th class="time-column"></th>
@@ -136,6 +191,7 @@
                  cdkDragHandle
                  [cdkDragData]="appointment"
                  class="appointment"
+                 [ngStyle]="{ 'background-color': appointment.color }"
                  [ngClass]="{'selected-teacher': selectedTeacher && appointment.teacher === selectedTeacher}"
                  (click)="editAppointment(appointment, $event)">
               <div class="appointment-content">
@@ -150,6 +206,5 @@
         </tr>
       </tbody>
     </table>
-    
   </div>
 </div>
