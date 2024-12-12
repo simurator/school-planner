@@ -11,6 +11,7 @@ import { Input, Output, EventEmitter } from '@angular/core';
 import { FormControl, FormArray } from '@angular/forms';
 import { DateService } from "../../services/date.service";
 import { timeRangeValidator } from "../../validators/time-range.validator";
+import { HighlightDirective } from '../../highlight.directive';
 
 @Component({
   selector: 'app-appointment-dialog',
@@ -18,6 +19,7 @@ import { timeRangeValidator } from "../../validators/time-range.validator";
   styleUrls: ['./appointment-dialog.component.scss'],
   standalone: true,
   imports: [
+    HighlightDirective,
     CommonModule,
     MatFormFieldModule,
     MatInputModule,

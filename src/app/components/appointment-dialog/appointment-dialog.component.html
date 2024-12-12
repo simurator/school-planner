@@ -61,7 +61,11 @@
       <button (click)="onDeleteClick()" *ngIf="data.uuid" style="margin-left: 10px" mat-stroked-button>
         Delete
       </button>
-      <button style="margin-left: 10px" mat-stroked-button (click)="onNoClick()">Cancel</button>
+      <button style="margin-left: 10px"
+              mat-stroked-button
+              (click)="onNoClick()" appHighlight>
+        Cancel
+      </button>
     </div>
   </form>
 </div>
